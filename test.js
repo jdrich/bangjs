@@ -1,41 +1,48 @@
 "use strict";
 
+var argv = process.argv,
+  available = ['parser'],
+  suites = [];
+
+if (argv.length === 2) {
+  suites = available;
+} else if (argv[2].match( /^(parser|compiler|output)$/ ) ) {
+  suites.push[argv[2]];
+} else {
+  console.log('Test suite "' + argv[2] + '" not found.' + "\n");
+
+  process.exit(1);
+}
+
 var bang = require('./bang');
 
-var tests = require('./tests');
+var index = 0;
 
-var failures = [];
+while ( index < suites.length ) {
+  var suite = suites[index];
 
-for (var index in tests) {
-  var test = tests[index];
+  var tests = require('./tests/' + suite ),
+    failures = [];
 
-  var failure = false;
+  for (var index in tests) {
+    var test = tests[index];
 
-  console.log( 'Running test #' + index + ': ' + test.name + "\n" );
+    var failure = false;
 
-  var compiled = bang.compile(test.input);
+    console.log( 'Running test #' + index + ': ' + test.name + "\n" );
 
-  if (compiled.toString() !== test.compiled.toString()) {
-    console.log( '  Compilation failure!' + "\n" );
-    console.log( '    Expected:' + "\n" );
-    console.log( test.compiled.toString() );
-    console.log( '    Compiled:' + "\n" );
-    console.log( compiled.toString() );
+    var output = bang[suite](test.input);
 
-    failure = true;
+    if (output.toString() !== test.output.toString()) {
+      console.log( '  Test failure!' + "\n" );
+      console.log( '    Expected:' + "\n" );
+      console.log( test.output.toString() );
+      console.log( '    Compiled:' + "\n" );
+      console.log( output.toString() );
+
+      failure = true;
+    }
+
+    failure && failures.push( index );
   }
-
-  var output = compiled( test.data );
-
-  if (output !== test.output) {
-    console.log( '  Execution failure!' + "\n" );
-    console.log( '    Expected:' + "\n" );
-    console.log( test.output );
-    console.log( '    Compiled:' + "\n" );
-    console.log( output );
-
-    failure = true;
-  }
-
-  failure && failures.push( index );
 }
