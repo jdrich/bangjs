@@ -34,6 +34,24 @@ module.exports.run = function( bang ) {
             'Parser detects opening and closing tags.'
         );
         
+        assert.deepEqual(
+            bang.parse('hello<!js "<!js !>" !>'),
+            ['hello', '<!js', ' "<!js !>" ', '!>'],
+            'Parser ignores opening and closing tags in quotes.'
+        );
+        
+        assert.deepEqual(
+            bang.parse('hello<!js "<!js !>\\"" !>'),
+            ['hello', '<!js', ' "<!js !>\\"" ', '!>'],
+            'Parser ignores opening and closing tags in quotes.'
+        );        
+        
+        assert.deepEqual(
+            bang.parse('hello<!js \'<!js !>\' !>'),
+            ['hello', '<!js', ' \'<!js !>\' ', '!>'],
+            'Parser ignores opening and closing tags in quotes.'
+        );
+        
         assert.throws(
             function () { bang.parse('hello<!js world ') },
             Error,
@@ -45,7 +63,6 @@ module.exports.run = function( bang ) {
             Error,
             'Parser detects exit in invalid state'
         );
-        
         
         console.log('Remarkably, everything went okay!');
     } catch (error) {
